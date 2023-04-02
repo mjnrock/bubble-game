@@ -20,10 +20,10 @@ document.body.appendChild(app.view);
 const circleContainer = new PIXI.Container();
 app.stage.addChild(circleContainer);
 
-const maxCircles = 50;
-const minSize = 10;
-const maxSize = 30;
-const maxVelocity = 0.25;
+const maxCircles = 75;
+const minSize = 1;
+const maxSize = 50;
+const maxVelocity = 0.5;
 
 const quadtree = new QuadTree(0, 0, app.renderer.width, app.renderer.height, 4, 64);
 let circles = new Set();
@@ -125,7 +125,7 @@ function gameLoop() {
 		}
 
 
-		if((Math.random() < 0.0001 && circle.r > 10) || circle.r > 100) {
+		if((Math.random() < 0.0001 && circle.r > 10) || circle.r > 50) {
 			circles.delete(circle);
 			quadtree.remove(circle);
 			circleContainer.removeChild(circle.graphics);
@@ -156,9 +156,7 @@ function gameLoop() {
 		}
 	}
 
-	console.log(circles.size)
-
-	if(Math.random() < 0.001) {
+	if(Math.random() < 0.005) {
 		// Pick a random spot on the canvas
 		const x = Math.random() * app.renderer.width;
 		const y = Math.random() * app.renderer.height;
