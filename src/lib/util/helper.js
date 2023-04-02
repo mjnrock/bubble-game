@@ -38,7 +38,7 @@ export function delta(current, next, asObject = false) {
 	} else {
 		return Object.keys(flatCurr).reduce((acc, key) => {
 			if(flatCurr[ key ] !== flatNext[ key ]) {
-				acc.push([ key, flatNext[ key ] ]);
+				acc.push(flatNext[ key ]);
 			}
 
 			return acc;

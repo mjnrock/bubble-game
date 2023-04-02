@@ -12,3 +12,4 @@ console.log(position.next({ z: 100, y: 200 }));
 console.log({ ...position, z: 100, y: 200 });
 console.log(Position.Factory({ z: 100, y: 200 }));
 console.log(Position.Factory({ x: 3, y: 4 }).distance([ 4, 6 ]));
+console.log(Helper.delta(Position.Factory({ x: 3, y: 4 }), Position.Factory({ x: 4, y: 6 })));
