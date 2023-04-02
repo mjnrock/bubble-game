@@ -36,8 +36,12 @@ export class Component {
 
 		return new this.constructor({ ...this });
 	}
-	next({ ...state } = {}) {
-		return new this.constructor({ ...this, ...state });
+	next({ ...state } = {}, merge = false) {
+		if(merge === true) {
+			return new this.constructor({ ...this, ...state });
+		}
+
+		return new this.constructor({ ...state });
 	}
 };
 
