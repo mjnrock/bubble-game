@@ -8,7 +8,7 @@ export class Circle {
 		this.r = r;
 		this.vx = vx;
 		this.vy = vy;
-		this.collisions = new Set();
+		this.graphics = null;
 		this.node = null;
 	}
 

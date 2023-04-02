@@ -5,12 +5,12 @@ import { Circle } from "./util/Circle";
 
 // Create a new PIXI.js application with a canvas element
 const app = new PIXI.Application({
-	width: window.innerWidth * 0.9,
-	height: window.innerHeight * 0.9,
+	width: window.innerWidth,
+	height: window.innerHeight,
 	antialias: true,
 	transparent: false,
 	resolution: 1,
-	backgroundColor: 0xffffff,
+	backgroundColor: 0x222,
 });
 
 // Add the PIXI.js canvas to the DOM
@@ -20,12 +20,7 @@ document.body.appendChild(app.view);
 const circleContainer = new PIXI.Container();
 app.stage.addChild(circleContainer);
 
-app.start();
-
-// const canvas = document.getElementById("canvas");
-// const ctx = canvas.getContext("2d");
-
-const maxCircles = 25;
+const maxCircles = 50;
 const minSize = 10;
 const maxSize = 30;
 const maxVelocity = 0.25;
@@ -45,10 +40,29 @@ for(let i = 0; i < maxCircles; i++) {
 	quadtree.insert(circle);
 }
 
-function gameLoop() {
-	// Clear canvas
-	// app.renderer.clear();
+function circleCollision(circle1, circle2) {
+	const dx = circle2.x - circle1.x;
+	const dy = circle2.y - circle1.y;
+	const distance = Math.sqrt(dx * dx + dy * dy);
 
+	if(distance < circle1.r + circle2.r) {
+		// Circles are colliding, destroy the smaller one and change velocity of the bigger one
+		const biggerCircle = circle1.r > circle2.r ? circle1 : circle2;
+		const smallerCircle = circle1.r > circle2.r ? circle2 : circle1;
+
+		// Compute the new velocity of the bigger circle based on the mass of the smaller one
+		const massRatio = smallerCircle.r / biggerCircle.r;
+		const vx = (biggerCircle.vx * (1 - massRatio)) + (smallerCircle.vx * massRatio);
+		const vy = (biggerCircle.vy * (1 - massRatio)) + (smallerCircle.vy * massRatio);
+
+		// Update the velocity and radius of the bigger circle
+		biggerCircle.vx = vx;
+		biggerCircle.vy = vy;
+		biggerCircle.r = Math.sqrt(biggerCircle.r * biggerCircle.r + smallerCircle.r * smallerCircle.r);
+	}
+}
+
+function gameLoop() {
 	// Move and draw circles
 	circles.forEach(circle => {
 		circle.move(app.renderer.width, app.renderer.height);
@@ -64,40 +78,20 @@ function gameLoop() {
 		if(!circle.graphics) {
 			// Create a new graphics object for the circle
 			circle.graphics = new PIXI.Graphics();
-			circle.graphics.lineStyle(1, 0x000);
+			circle.graphics.beginFill(0x7ecbed);
+			circle.graphics.lineStyle(2, 0x3893ba);
 			circle.graphics.drawCircle(~~circle.x, ~~circle.y, ~~circle.r);
 			circle.graphics.endFill();
 			circleContainer.addChild(circle.graphics);
 		} else {
 			// Reuse the existing graphics object
 			circle.graphics.clear();
-			circle.graphics.lineStyle(1, 0x000);
+			circle.graphics.beginFill(0x7ecbed);
+			circle.graphics.lineStyle(2, 0x3893ba);
 			circle.graphics.drawCircle(~~circle.x, ~~circle.y, ~~circle.r);
 			circle.graphics.endFill();
 		}
 	});
-	
-	// // Clear canvas
-	// ctx.clearRect(0, 0, app.renderer.width, app.renderer.height);
-
-	// // Move and draw circles
-	// for(const circle of circles) {
-	// 	circle.move(app.renderer.width, app.renderer.height);
-
-	// 	const currentNode = circle.node;
-	// 	const newNode = quadtree.getContainingNode(circle);
-	// 	if(currentNode !== newNode) {
-	// 		currentNode.remove(circle);
-	// 		newNode.insert(circle);
-	// 		circle.node = newNode;
-	// 	}
-
-	// 	ctx.beginPath();
-	// 	ctx.arc(circle.x, circle.y, circle.r, 0, 2 * Math.PI);
-	// 	ctx.lineWidth = 1;
-	// 	ctx.strokeStyle = circle.collisions.size ? 'red' : 'green';
-	// 	ctx.stroke();
-	// }
 
 	// Check for collisions
 	let avgRadius = Array.from(circles).reduce((sum, circle) => sum + circle.r, 0) / circles.size;
@@ -114,6 +108,7 @@ function gameLoop() {
 				const dist = Math.sqrt(dx * dx + dy * dy);
 				if(dist < circle.r + neighbor.r) {
 					const newArea = Math.PI * (circle.r * circle.r + neighbor.r * neighbor.r);
+					circleCollision(circle, neighbor);
 					if(circle.r >= neighbor.r) {
 						circle.r = Math.sqrt(newArea / Math.PI);
 						circles.delete(neighbor);
@@ -130,12 +125,12 @@ function gameLoop() {
 		}
 
 
-		if(Math.random() < 0.0001 || circle.r > 250) {
+		if((Math.random() < 0.0001 && circle.r > 10) || circle.r > 100) {
 			circles.delete(circle);
 			quadtree.remove(circle);
 			circleContainer.removeChild(circle.graphics);
 			const totalArea = Math.PI * circle.r * circle.r;
-			const numBubbles = Math.floor(Math.floor(totalArea / (avgRadius * avgRadius)), 25);
+			const numBubbles = Math.min(Math.floor(totalArea / (avgRadius * avgRadius)), 100);
 			const explodingMass = circle.r * circle.r;
 			const surroundingMass = totalArea - explodingMass;
 			const explosionForce = (explodingMass * maxVelocity) / surroundingMass;
@@ -161,6 +156,8 @@ function gameLoop() {
 		}
 	}
 
+	console.log(circles.size)
+
 	if(Math.random() < 0.001) {
 		// Pick a random spot on the canvas
 		const x = Math.random() * app.renderer.width;
@@ -173,7 +170,7 @@ function gameLoop() {
 		let totalMomentumY = 0;
 
 		for(let i = 0; i < numBubbles; i++) {
-			const r = Math.random() * avgRadius / 2;
+			const r = Math.random() * 10;
 			const m = r * r;
 			const angle = Math.random() * Math.PI * 2;
 			const distanceFromCenter = Math.random() * (app.renderer.width / 2 - r);
@@ -195,5 +192,16 @@ function gameLoop() {
 
 	requestAnimationFrame(gameLoop);
 }
+
+function resize() {
+	// Resize the PIXI.js renderer to match the new window size
+	app.renderer.resize(window.innerWidth, window.innerHeight);
+}
+
+// Call the resize function once to initialize the canvas size
+resize();
+
+// Add an event listener to resize the canvas when the window size changes
+window.addEventListener('resize', resize);
 
 requestAnimationFrame(gameLoop);
