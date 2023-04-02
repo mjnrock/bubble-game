@@ -1,25 +1,27 @@
 import Component from "./Component";
 
 export class Position extends Component {
-	constructor ({ x, y, ...state } = {}) {
+	constructor ({ x, y, facing, ...state } = {}) {
 		super({
 			x,
 			y,
+			facing,
 			...state,
 		});
 	}
 
-	pos(asArray = false) {
+	position(asArray = false) {
 		if(asArray) {
 			return [ this.x, this.y ];
 		}
 
 		return {
-			...this,
+			x: this.x,
+			y: this.y,
 		};
 	}
 
-	distance(args = {}) {
+	getDistance(args = {}) {
 		let x,
 			y;
 
