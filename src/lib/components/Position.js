@@ -1,14 +1,11 @@
 import Component from "./Component";
 
 export class Position extends Component {
-	static Factory({ x = 0, y = 0 } = {}, qty = 1) {
-		return Component.Factory({ x, y }, qty, Position);
-	}
-
-	constructor ({ x = 0, y = 0 } = {}) {
+	constructor ({ x, y, ...state } = {}) {
 		super({
 			x,
 			y,
+			...state,
 		});
 	}
 
@@ -20,6 +17,19 @@ export class Position extends Component {
 		return {
 			...this,
 		};
+	}
+
+	distance(args = {}) {
+		let x,
+			y;
+
+		if(Array.isArray(args)) {
+			[ x, y ] = args;
+		} else {
+			({ x, y } = args);
+		}
+
+		return Math.sqrt(Math.pow(this.x - x, 2) + Math.pow(this.y - y, 2));
 	}
 };
 
