@@ -20,7 +20,7 @@ document.body.appendChild(app.view);
 const circleContainer = new PIXI.Container();
 app.stage.addChild(circleContainer);
 
-const maxCircles = 75;
+const maxCircles = 25;
 const minSize = 1;
 const maxSize = 50;
 const maxVelocity = 0.5;
